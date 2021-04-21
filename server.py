@@ -18,7 +18,13 @@ def receiver_t():
 
 
 def s_incoming(msg):
-    print('Incoming message: ' + msg.decode('utf-8'))
+    # ---------demo-------------
+    process(msg[:3], msg[3:])
+    # ---------demo-------------
+
+
+def process(cmd, param):
+    print('Incoming message: ' + cmd.decode('utf-8'))
     global CURRENT_FOLDER
     db_dir = NET_PATH + '/' + OWN_DB
     cur_f_dir = NET_PATH + '/' + OWN_DB + '/' + CURRENT_FOLDER
@@ -26,17 +32,17 @@ def s_incoming(msg):
         os.mkdir(db_dir)
     if not os.path.exists(cur_f_dir):
         os.mkdir(cur_f_dir)
-    command = msg[0:3]
+    command = cmd
 
     # MKD -  creates a directory in the current folder
     if command == commands[2].lower().encode():
-        new_folder_dir = db_dir + '/' + CURRENT_FOLDER + '/' + msg[3:].decode()
+        new_folder_dir = db_dir + '/' + CURRENT_FOLDER + '/' + param.decode()
         if not os.path.exists(new_folder_dir):
             os.mkdir(new_folder_dir)
 
     # RMD - removes the directory with all files in it without question
     if command == commands[3].lower().encode():
-        rm_folder_dir = db_dir + '/' + CURRENT_FOLDER + '/' + msg[3:].decode()
+        rm_folder_dir = db_dir + '/' + CURRENT_FOLDER + '/' + param.decode()
         if os.path.exists(rm_folder_dir):
             try:
                 shutil.rmtree(rm_folder_dir)
@@ -45,7 +51,7 @@ def s_incoming(msg):
 
     # RMF - removes file without question
     if command == commands[4].lower().encode():
-        rm_file_dir = db_dir + '/' + CURRENT_FOLDER + '/' + msg[3:].decode()
+        rm_file_dir = db_dir + '/' + CURRENT_FOLDER + '/' + param.decode()
         if os.path.exists(rm_file_dir):
             os.remove(rm_file_dir)
 
@@ -55,14 +61,14 @@ def s_incoming(msg):
 
     # CWD - Makes the given folder the current folder, “..” steps back one in the file hierarchy
     if command == commands[6].lower().encode():
-        if msg[3:] == b'..':
+        if param == b'..':
             string = CURRENT_FOLDER.split('/')
             if len(string) > 1:
                 CURRENT_FOLDER = CURRENT_FOLDER[:CURRENT_FOLDER.rfind("/")]
         else:
-            folder_dir = db_dir + '/' + CURRENT_FOLDER + '/' + msg[3:].decode()
+            folder_dir = db_dir + '/' + CURRENT_FOLDER + '/' + param.decode()
             if os.path.exists(folder_dir):
-                CURRENT_FOLDER += '/' + msg[3:].decode()
+                CURRENT_FOLDER += '/' + param.decode()
 
         send_message(OWN_ADDR, 'C', 'Current_folder:_' + CURRENT_FOLDER)
         print(CURRENT_FOLDER)
@@ -77,13 +83,13 @@ def s_incoming(msg):
     # UPL - Client-side encryption using AES128-GCM and uploads the file to the current folder
     if command == commands[8].lower().encode():
         f = open(cur_f_dir + '/' + "teszt.txt", "w")
-        data = msg[3:].decode('utf-8')
+        data = param.decode('utf-8')
         f.write(data)
         f.close()
 
     # DNL - downloads the encrypted file to the download folder - decrypts it if key given
     if command == commands[9].lower().encode():
-        in_file = open(cur_f_dir + '/' + msg[3:].decode('utf-8'), "rb")  # opening for [r]eading as [b]inary
+        in_file = open(cur_f_dir + '/' + param.decode('utf-8'), "rb")  # opening for [r]eading as [b]inary
         data = in_file.read()
         in_file.close()
         send_message(OWN_ADDR, 'C', data.decode('utf-8'))
