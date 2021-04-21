@@ -3,7 +3,7 @@ import shutil
 import threading
 
 from netinterface import network_interface
-from common_code import send_message, make_message, net_path  # , receiver_thread
+from common_code import send_message, concat_str, net_path  # , receiver_thread
 
 commands = ['LGN', 'LGO', 'MKD', 'RMD', 'RMF', 'GWD', 'CWD', 'LST', 'UPL', 'DNL']
 
