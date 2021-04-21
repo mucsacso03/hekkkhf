@@ -41,13 +41,13 @@ def valid_command(command):
 
 def make_message(command, params):  # command = string, params = string array(len=0/1/2)
     # ---------demo-------------
-    if command.upper() == valid_commands[8]:
-        in_file = open(params[0], "rb")  # opening for [r]eading as [b]inary
-        data = in_file.read()
-        in_file.close()
-        message = 'upl' + os.path.basename(in_file.name) + concat_str(data.decode('utf-8'))  # just for demonstration
-    else:
-        message = concat_str(command, params)
+    # if command.upper() == valid_commands[8]:
+    #     in_file = open(params[0], "rb")  # opening for [r]eading as [b]inary
+    #     data = in_file.read()
+    #     in_file.close()
+    #     message = 'upl' + os.path.basename(in_file.name) + concat_str(data.decode('utf-8'))  # just for demonstration
+    # else:
+    message = concat_str(command, params)
     # ---------demo-------------
     send_message(OWN_ADDR, 'S', message)
 

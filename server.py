@@ -82,10 +82,17 @@ def process(cmd, param):
 
     # UPL - Client-side encryption using AES128-GCM and uploads the file to the current folder
     if command == commands[8].lower().encode():
-        f = open(cur_f_dir + '/' + "teszt.txt", "w")
-        data = param.decode('utf-8')
-        f.write(data)
-        f.close()
+        if len(param) >= 44:
+            end_of_data = len(param)-16
+            file_name = param[:16].decode('utf-8')
+            nonce = param[16:28]
+            data = param[28:end_of_data].decode('utf-8')
+            tag = param[end_of_data:]
+            f = open(cur_f_dir + '/' + file_name, "w")
+            f.write(data)
+            f.close()
+        else:
+            print('Error - To short file...')
 
     # DNL - downloads the encrypted file to the download folder - decrypts it if key given
     if command == commands[9].lower().encode():
