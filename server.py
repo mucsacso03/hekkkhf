@@ -23,6 +23,10 @@ def s_incoming(msg):
     # ---------demo-------------
 
 
+def make_message(type, err, res, file):
+    send_message(OWN_ADDR, 'C', res)
+
+
 def process(cmd, param):
     print('Incoming message: ' + cmd.decode('utf-8'))
     global CURRENT_FOLDER
@@ -41,7 +45,7 @@ def process(cmd, param):
             os.mkdir(new_folder_dir)
 
     # RMD - removes the directory with all files in it without question
-    if command == commands[3].lower().encode():
+    elif command == commands[3].lower().encode():
         rm_folder_dir = db_dir + '/' + CURRENT_FOLDER + '/' + param.decode()
         if os.path.exists(rm_folder_dir):
             try:
@@ -50,17 +54,17 @@ def process(cmd, param):
                 print("Error: %s - %s." % (e.filename, e.strerror))
 
     # RMF - removes file without question
-    if command == commands[4].lower().encode():
+    elif command == commands[4].lower().encode():
         rm_file_dir = db_dir + '/' + CURRENT_FOLDER + '/' + param.decode()
         if os.path.exists(rm_file_dir):
             os.remove(rm_file_dir)
 
     # GWD - prints the name of the current folder
-    if command == commands[5].lower().encode():
-        send_message(OWN_ADDR, 'C', 'Current_folder:_' + CURRENT_FOLDER)
+    elif command == commands[5].lower().encode():
+        make_message('', '', 'Current_folder:_' + CURRENT_FOLDER, '')
 
     # CWD - Makes the given folder the current folder, “..” steps back one in the file hierarchy
-    if command == commands[6].lower().encode():
+    elif command == commands[6].lower().encode():
         if param == b'..':
             string = CURRENT_FOLDER.split('/')
             if len(string) > 1:
@@ -70,18 +74,18 @@ def process(cmd, param):
             if os.path.exists(folder_dir):
                 CURRENT_FOLDER += '/' + param.decode()
 
-        send_message(OWN_ADDR, 'C', 'Current_folder:_' + CURRENT_FOLDER)
+        make_message('', '', 'Current_folder:_' + CURRENT_FOLDER, '')
         print(CURRENT_FOLDER)
 
     # LST - list the content of the current folder
-    if command == commands[7].lower().encode():
+    elif command == commands[7].lower().encode():
         list_d = '_'.join(map(str, os.listdir(cur_f_dir))) # a listát egy stringé joinolja '_' jelekkel
         if len(os.listdir(cur_f_dir)) == 0:
             list_d = '_'
-        send_message(OWN_ADDR, 'C', list_d)
+        make_message('', '', list_d, '')
 
     # UPL - Client-side encryption using AES128-GCM and uploads the file to the current folder
-    if command == commands[8].lower().encode():
+    elif command == commands[8].lower().encode():
         if len(param) >= 44:
             end_of_data = len(param)-16
             file_name = param[:16].decode('utf-8')
@@ -95,11 +99,11 @@ def process(cmd, param):
             print('Error - To short file...')
 
     # DNL - downloads the encrypted file to the download folder - decrypts it if key given
-    if command == commands[9].lower().encode():
+    elif command == commands[9].lower().encode():
         in_file = open(cur_f_dir + '/' + param.decode('utf-8'), "rb")  # opening for [r]eading as [b]inary
         data = in_file.read()
         in_file.close()
-        send_message(OWN_ADDR, 'C', data.decode('utf-8'))
+        make_message('', '', data.decode('utf-8'), '')
 
 
 # Press the green button in the gutter to run the script.

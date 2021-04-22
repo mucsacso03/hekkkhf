@@ -43,7 +43,7 @@ if OWN_ADDR not in network_interface.addr_space:
 
 # main loop
 netif = network_interface(NET_PATH, OWN_ADDR)
-print('Main loop started...')
+print('Receiver started...')
 while True:
     # Calling receive_msg() in non-blocking mode ...
     #	status, msg = netif.receive_msg(blocking=False)
