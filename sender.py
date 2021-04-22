@@ -46,13 +46,18 @@ if OWN_ADDR not in network_interface.addr_space:
 	sys.exit(1)
 
 # main loop
-netif = network_interface(NET_PATH, OWN_ADDR)
 
-#print('Main loop started...')
-while True:
-	if DST == '' or OWN_ADDR == '':
-		print('Error - missing values: DST or OWN_ADDR')
-		break
-	netif.send_msg(DST, MSG.encode('utf-8'))
-	break
-	#if input('Continue? (y/n): ') == 'n': break
+
+def send_faszom(msg, own_addr, dst):
+	OWN_ADDR = own_addr
+	netif = network_interface(NET_PATH, OWN_ADDR)
+	netif.send_msg(dst, msg)
+
+# #print('Main loop started...')
+# while True:
+# 	if DST == '' or OWN_ADDR == '':
+# 		print('Error - missing values: DST or OWN_ADDR')
+# 		break
+# 	#netif.send_msg(DST, MSG.encode('utf-8'))
+# 	break
+# 	#if input('Continue? (y/n): ') == 'n': break

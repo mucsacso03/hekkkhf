@@ -3,6 +3,7 @@ import threading
 
 from netinterface import network_interface
 from common_code import send_message, concat_str, net_path  # , receiver_thread
+from sender import send_faszom
 
 valid_commands = ['LGN', 'LGO', 'MKD', 'RMD', 'RMF', 'GWD', 'CWD', 'LST', 'UPL', 'DNL']
 #                   0      1      2      3      4      5      6      7      8      9
@@ -49,7 +50,10 @@ def make_message(command, params):  # command = string, params = string array(le
     # else:
     message = concat_str(command, params)
     # ---------demo-------------
-    send_message(OWN_ADDR, 'S', message)
+    #netif = network_interface(NET_PATH, OWN_ADDR)
+    #netif.send_msg('S', b'asd')
+    send_faszom(command.encode(),OWN_ADDR, 'S')
+    #send_message(OWN_ADDR, 'S', message)
 
 
 def command_line():

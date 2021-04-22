@@ -4,6 +4,7 @@ import threading
 
 from netinterface import network_interface
 from common_code import send_message, concat_str, net_path  # , receiver_thread
+from sender import send_faszom
 
 commands = ['LGN', 'LGO', 'MKD', 'RMD', 'RMF', 'GWD', 'CWD', 'LST', 'UPL', 'DNL']
 
@@ -24,7 +25,8 @@ def s_incoming(msg):
 
 
 def make_message(type, err, res, file):
-    send_message(OWN_ADDR, 'C', res)
+    send_faszom(res.encode(), OWN_ADDR, 'C')
+    #send_message(OWN_ADDR, 'C', res)
 
 
 def process(cmd, param):
