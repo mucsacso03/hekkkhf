@@ -6,7 +6,7 @@ def net_path():
 
 
 def send_message(addr, dst, msg):
-    os.system('python C:/Users/David/PycharmProjects/client/sender.py --addr ' + addr + ' --dst ' + dst
+    os.system('python ' + net_path() + '\\sender.py ' + '--addr ' + addr + ' --dst ' + dst
               + ' --msg ' + msg)
 
 
