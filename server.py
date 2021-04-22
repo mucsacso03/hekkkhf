@@ -2,6 +2,8 @@ import os
 import shutil
 import threading
 
+from Crypto.Util.Padding import unpad
+
 from netinterface import network_interface
 from common_code import send_message, concat_str, net_path  # , receiver_thread
 from sender import send_message
@@ -89,12 +91,22 @@ def process(cmd, param):
     # UPL - Client-side encryption using AES128-GCM and uploads the file to the current folder
     elif command == commands[8].lower().encode():
         if len(param) >= 44:
-            end_of_data = len(param)-16
-            file_name = param[:16].decode('utf-8')
-            nonce = param[16:28]
-            data = param[28:end_of_data].decode('utf-8')
-            tag = param[end_of_data:]
-            f = open(cur_f_dir + '/' + file_name, "w")
+            enc_message = param
+            print(enc_message)
+            if enc_message[15] == 128 or enc_message[15] == 0:
+                file_name = unpad(enc_message[:16], 16, 'iso7816').decode('ascii')
+            else:
+                file_name = enc_message[:16].decode('ascii')
+            nonce = enc_message[16:28]
+            ciphertext = enc_message[28:-16]
+            tag = enc_message[-16:]
+            data = nonce + ciphertext + tag
+            # end_of_data = len(param)-16
+            # file_name = param[:16].decode('utf-8')
+            # nonce = param[16:28]
+            # data = param[28:end_of_data].decode('utf-8')
+            # tag = param[end_of_data:]
+            f = open(cur_f_dir + '/' + file_name, "wb")
             f.write(data)
             f.close()
         else:
