@@ -3,7 +3,7 @@ import threading
 
 from netinterface import network_interface
 from common_code import send_message, concat_str, net_path  # , receiver_thread
-from sender import send_faszom
+from sender import send_message
 
 valid_commands = ['LGN', 'LGO', 'MKD', 'RMD', 'RMF', 'GWD', 'CWD', 'LST', 'UPL', 'DNL']
 #                   0      1      2      3      4      5      6      7      8      9
@@ -13,7 +13,7 @@ OWN_ADDR = 'C'
 
 def receiver_t():
     # Külön szálként indítva elindul a receiver
-    os.system('python C:/Users/David/PycharmProjects/client/receiver.py --addr ' + OWN_ADDR)
+    os.system('python ' + net_path() + '\\receiver.py --addr ' + OWN_ADDR)
 
 
 def valid_command(command):
@@ -52,7 +52,7 @@ def make_message(command, params):  # command = string, params = string array(le
     # ---------demo-------------
     #netif = network_interface(NET_PATH, OWN_ADDR)
     #netif.send_msg('S', b'asd')
-    send_faszom(command.encode(),OWN_ADDR, 'S')
+    send_message(message.encode(), OWN_ADDR, 'S')
     #send_message(OWN_ADDR, 'S', message)
 
 

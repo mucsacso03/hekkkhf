@@ -48,7 +48,7 @@ if OWN_ADDR not in network_interface.addr_space:
 # main loop
 
 
-def send_faszom(msg, own_addr, dst):
+def send_message(msg, own_addr, dst):
 	OWN_ADDR = own_addr
 	netif = network_interface(NET_PATH, OWN_ADDR)
 	netif.send_msg(dst, msg)
