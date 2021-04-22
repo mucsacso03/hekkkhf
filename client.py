@@ -1,6 +1,10 @@
 import os
 import threading
 
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+from Crypto.Random import get_random_bytes
+from netinterface import network_interface
 from netinterface import network_interface
 from common_code import send_message, concat_str, net_path  # , receiver_thread
 from sender import send_message
@@ -14,6 +18,29 @@ OWN_ADDR = 'C'
 def receiver_t():
     # Külön szálként indítva elindul a receiver
     os.system('python ' + net_path() + '\\receiver.py --addr ' + OWN_ADDR)
+
+
+def upl(file_path, key_path):
+    head, filename = os.path.split(file_path)
+    if len(filename.split('.')[0][:16]) == 16:
+        filename = str.encode(filename.split('.')[0][:16])
+    else:
+        filename = pad(str.encode(filename.split('.')[0][:16]), 16, 'iso7816')
+
+    try:
+        file_content = open(file_path, "rb").read()
+        key = open(key_path, "rb").read()
+    except FileNotFoundError:
+        print("ERROR")
+        return
+    nonce = get_random_bytes(12)
+    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    ciphertext, tag = cipher.encrypt_and_digest(file_content)
+    enc_message = (filename[:16]) + nonce + ciphertext + tag
+    #enc_message-t kell belerakni a dologba amit elküldünk
+    #file = open("C:\\users\\mucsi\\desktop\\" + enc_message[:16].decode('ascii') + ".txt", "wb")
+    #file.write(enc_message)
+    return enc_message
 
 
 def valid_command(command):
@@ -48,7 +75,12 @@ def make_message(command, params):  # command = string, params = string array(le
     #     in_file.close()
     #     message = 'upl' + os.path.basename(in_file.name) + concat_str(data.decode('utf-8'))  # just for demonstration
     # else:
-    message = concat_str(command, params)
+    #message = concat_str(command, params)
+
+    message = concat_str(command, params).encode()
+    if command.upper() == valid_commands[8]:
+        message = b'upl' + upl(params[0], params[1])
+
     # ---------demo-------------
     #netif = network_interface(NET_PATH, OWN_ADDR)
     #netif.send_msg('S', b'asd')
