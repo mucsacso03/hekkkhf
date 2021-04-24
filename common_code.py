@@ -17,6 +17,7 @@ def concat_str(command, params):
     # temporary
     str = command
     for x in params:
+        print(x)
         str += x
         # print(str)
     return str

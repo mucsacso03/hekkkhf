@@ -3,8 +3,9 @@
 
 import os, sys, getopt, time
 from netinterface import network_interface
-from client import c_incoming
-from server import s_incoming
+# from client import c_incoming
+import server
+import client
 from common_code import net_path
 
 NET_PATH = net_path() # 'C:/Users/David/PycharmProjects/client'
@@ -53,7 +54,13 @@ while True:
     # Calling receive_msg() in blocking mode ...
     status, msg = netif.receive_msg(blocking=True)  # when returns, status is True and msg contains a message
     if OWN_ADDR == 'S':
-        s_incoming(msg)
+        # server = Server(input('Give me the passphrase for decrypting server key: '))
+        print('Server incoming')
+        server.s_incoming(msg)
+
+        # server.s_incoming(msg)
     if OWN_ADDR == 'C':
-        c_incoming(msg)
+        print('Client incoming')
+        client.c_incoming(msg)
+        # client.c_incoming(msg)
     # print(msg.decode('utf-8'))
