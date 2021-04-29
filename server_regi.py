@@ -14,32 +14,33 @@ from Crypto.Cipher import AES
 
 
 class Server:
+
     OWN_ADDR = 'S'
     cert_path = "keys\server_cert.crt"
     key_path = "keys\server_key.pem"
-    passphrase = 'ciphertozes'
+    passphrase = 'lofasz'
     SQN = 1
     session_token = b''
     session_key = b''
     # f.NET_PATH = net_path() #'C:/Users/David/PycharmProjects/client'
     # f.OWN_ADDR = 'S'
-    CURRENT_USERNAME = 'buttya'  # TODO: loginnal felülirni
     OWN_DB = OWN_ADDR + '_DB'
-    CURRENT_FOLDER = 'root'  # TODO: Minden loginnal atirni root-ra
+    CURRENT_FOLDER = 'root'
     cert = b''
     cert = b''
     rnd = b''
-    phase = 0 # 0 = key exchange init, 1 = GCM(session token) received, 2 = Effective usage
+    initialized = False
+        
 
+        
     # commands = ['LGN', 'LGO', 'MKD', 'RMD', 'RMF', 'GWD', 'CWD', 'LST', 'UPL', 'DNL']
-
 
 def get_cert_and_rnd():
     try:
         with open(Server.cert_path, "rb") as server_cert_file:
             Server.cert = server_cert_file.read()
 
-            Server.rnd = get_random_bytes(16)  # random generation
+            Server.rnd = get_random_bytes(16) # random generation
             return Server.cert + Server.rnd
 
     except (FileNotFoundError) as e:
@@ -48,10 +49,10 @@ def get_cert_and_rnd():
 
 
 def receiver_t():
-    os.system('python ' + net_path() + '\\receiver.py --addr ' + Server.OWN_ADDR)
-
+        os.system('python ' + net_path() + '\\receiver.py --addr ' + Server.OWN_ADDR)
 
 def priv_key_check(ciphertext):
+     # if ha elbaszna
     plaintext = ownRSA.priv_decrypt(ciphertext, Server.key_path, Server.passphrase)
     Server.session_token = plaintext[:16]
     Server.session_key = plaintext[16:32]
@@ -60,8 +61,7 @@ def priv_key_check(ciphertext):
     if rand != Server.rnd:
         print('Not the same random')
         return False
-    return True
-
+    return True 
 
 def key_exchange_init(msg):
     print(msg)
@@ -70,68 +70,55 @@ def key_exchange_init(msg):
     elif msg[:3].upper().decode() == 'PUB':
         if priv_key_check(msg[3:]):
             send_GCM_session_token()
-            Server.phase = 2 # TODO: 1 legyen még csak itt
             # make_message(type, err, res, file)
 
 
 def s_incoming(msg):
     # ---------demo-------------
-    if Server.phase == 0:
-        key_exchange_init(msg)
-    elif Server.phase==2:
+    if Server.initialized:
         process(msg[:3], msg[3:])
-
+    else:
+        key_exchange_init(msg)
     # ---------demo-------------
 
-
 def send_GCM_session_token():
-    SQN_b = Server.SQN.to_bytes(4, byteorder='big')
+
+    SQN_b = Server.SQN.to_bytes(4, byteorder = 'big')
     RND = get_random_bytes(8)
     nonce = SQN_b + RND
     cipher = AES.new(Server.session_key, AES.MODE_GCM, nonce=nonce)
     ciphertext, tag = cipher.encrypt_and_digest(Server.session_token)
-    msg_len = (len(SQN_b + RND + ciphertext + tag) + 2).to_bytes(2, byteorder='big')
-    msg = msg_len + SQN_b + RND + ciphertext + tag
+    msg_len = (len(SQN_b + RND + ciphertext + tag) + 2).to_bytes(2, byteorder = 'big')
+    msg =  msg_len + SQN_b + RND + ciphertext + tag
     send_message(msg, Server.OWN_ADDR, 'C')
 
 
 def make_message(type, err, res, file):
     # IDE JÖN A TITKOSÍTÁS
     send_message(res, Server.OWN_ADDR, 'C')
-    # send_message(OWN_ADDR, 'C', res)
-
-
-def init_user_directory(username):  # TODO loginhoz becsatolni
-    Server.CURRENT_USERNAME = username
-    db_dir = net_path() + '/' + Server.OWN_DB
-    user_dir = db_dir + '/' + Server.CURRENT_USERNAME
-    cur_f_dir = user_dir + '/' + Server.CURRENT_FOLDER
-    if not os.path.exists(db_dir):
-        os.mkdir(db_dir)
-    if not os.path.exists(user_dir):
-        os.mkdir(user_dir)
-    if not os.path.exists(cur_f_dir):
-        os.mkdir(cur_f_dir)
-    return cur_f_dir
+    #send_message(OWN_ADDR, 'C', res)
 
 
 def process(cmd, param):
-    Server.SQN = Server.SQN + 1
+    Server.SQN = Server.SQN+1
     print(Server.SQN)
     print('Incoming message: ' + cmd.decode('utf-8'))
     db_dir = net_path() + '/' + Server.OWN_DB
-    user_dir = db_dir + '/' + Server.CURRENT_USERNAME  # csak az épp bejelentkezett ember mappáját fogja használni
-    cur_f_dir = user_dir + '/' + Server.CURRENT_FOLDER
+    cur_f_dir = net_path() + '/' + Server.OWN_DB + '/' + Server.CURRENT_FOLDER
+    if not os.path.exists(db_dir):
+        os.mkdir(db_dir)
+    if not os.path.exists(cur_f_dir):
+        os.mkdir(cur_f_dir)
     command = cmd.upper().decode()
     # MKD -  creates a directory in the current folder
     if command == commands.MKD:
-        new_folder_dir = cur_f_dir + '/' + param.decode()
+        new_folder_dir = db_dir + '/' + Server.CURRENT_FOLDER + '/' + param.decode()
         if not os.path.exists(new_folder_dir):
             os.mkdir(new_folder_dir)
 
     # RMD - removes the directory with all files in it without question
     elif command == commands.RMD:
-        rm_folder_dir = cur_f_dir + '/' + param.decode()
+        rm_folder_dir = db_dir + '/' + Server.CURRENT_FOLDER + '/' + param.decode()
         if os.path.exists(rm_folder_dir):
             try:
                 shutil.rmtree(rm_folder_dir)
@@ -140,7 +127,7 @@ def process(cmd, param):
 
     # RMF - removes file without question
     elif command == commands.RMF:
-        rm_file_dir = cur_f_dir + '/' + param.decode()
+        rm_file_dir = db_dir + '/' + Server.CURRENT_FOLDER + '/' + param.decode()
         if os.path.exists(rm_file_dir):
             os.remove(rm_file_dir)
 
@@ -155,8 +142,7 @@ def process(cmd, param):
             if len(string) > 1:
                 Server.CURRENT_FOLDER = Server.CURRENT_FOLDER[:Server.CURRENT_FOLDER.rfind("/")]
         else:
-            folder_dir = db_dir + '/' + Server.CURRENT_USERNAME + '/' + Server.CURRENT_FOLDER + '/' + param.decode()
-            print(folder_dir)
+            folder_dir = db_dir + '/' + Server.CURRENT_FOLDER + '/' + param.decode()
             if os.path.exists(folder_dir):
                 Server.CURRENT_FOLDER += '/' + param.decode()
 
@@ -165,7 +151,7 @@ def process(cmd, param):
 
     # LST - list the content of the current folder
     elif command == commands.LST:
-        list_d = '_'.join(map(str, os.listdir(cur_f_dir)))  # a listát egy stringé joinolja '_' jelekkel
+        list_d = '_'.join(map(str, os.listdir(cur_f_dir))) # a listát egy stringé joinolja '_' jelekkel
         if len(os.listdir(cur_f_dir)) == 0:
             list_d = '_'
         make_message('', '', list_d.encode(), '')
@@ -195,11 +181,12 @@ def process(cmd, param):
             print('Error - To short file...')
 
     # DNL - downloads the encrypted file to the download folder - decrypts it if key given TODO: megvan ez?
-    elif command == commands.DNL:
+    elif command == commands.DNL :
         in_file = open(cur_f_dir + '/' + param.decode('utf-8'), "rb")  # opening for [r]eading as [b]inary
         data = in_file.read()
         in_file.close()
         make_message('', '', data.decode('utf-8'), '')
+    
 
 
 # Press the green button in the gutter to run the script.

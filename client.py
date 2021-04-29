@@ -19,10 +19,10 @@ class Client:
     trusted_cert_store = crypto.X509Store()
     session_key = b''
     session_token = b''
-    initialized = False
+    # initialized = False
     server_cert = b''
     server_random = b''
-    phase = 2 # 0 = key exchange init, 1 = GCM(session token) received, 2 = Effective usage
+    phase = 0 # 0 = key exchange init, 1 = GCM(session token) received, 2 = Effective usage
 
 
 
@@ -131,7 +131,7 @@ def c_incoming(msg):
         check_AES_session_token(msg)
         pass
     elif Client.phase == 2:
-        print('Incoming message: ' + str(msg, 'utf-8'))
+        print('Incoming message: ' + str(msg)) #str(msg, 'utf-8'))
         pass # Robi parsere
     else:
         print('bad phase number')
@@ -152,6 +152,7 @@ def check_AES_session_token(server_msg):
         print('Session key does not match with decrypted value')
     
     print(dec_session_token)
+    print('Next step is login and effective usage!')
     Client.phase = 2
 
 def verify_server_cert(server_cert):

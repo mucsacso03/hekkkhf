@@ -55,12 +55,12 @@ while True:
     status, msg = netif.receive_msg(blocking=True)  # when returns, status is True and msg contains a message
     if OWN_ADDR == 'S':
         # server = Server(input('Give me the passphrase for decrypting server key: '))
-        print('Server incoming')
+        # print('Server incoming')
         server.s_incoming(msg)
 
         # server.s_incoming(msg)
     if OWN_ADDR == 'C':
-        print('Client incoming')
+        # print('Client incoming')
         client.c_incoming(msg)
         # client.c_incoming(msg)
     # print(msg.decode('utf-8'))
